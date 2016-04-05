@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+require 'whats'
+
+`mkdir -p #{Whats::TMP_PATH}`
+
+if ARGV.size <= 0
+  puts 'wrong command line'
+  exit
+end
+
+results = Whats.word(ARGV[0])
+Whats.print_result results
+
+loop do
+  print '=> '
+  opt = STDIN.gets
+  case opt
+    when /^(\d+)([a-z])?/i
+      item = $1.to_i
+      type = $2 =~ /b/i ? 'bri' : 'ame'
+      r = results[item]
+      if r
+        url = "#{type}_url".to_sym
+        ipa = "#{type}_ipa".to_sym
+        if r[url] && r[ipa]
+          puts "#{type}: /#{r[ipa]}/"
+          Thread.new { `mpg123 -q #{r[url]}` }
+        end
+      end
+    when /^p/i
+      print_result(results)
+    else
+      exit
+  end
+end
